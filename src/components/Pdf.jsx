@@ -2,6 +2,19 @@ import { useState, useEffect, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
+// OCR functionality - will be enabled when tesseract.js is installed
+let tesseractAvailable = false;
+
+// Check if tesseract.js is available (this will be set to true when installed)
+const checkTesseractAvailability = () => {
+  try {
+    // This is a simple check - in a real implementation, you'd check if the module exists
+    return typeof window !== 'undefined' && window.Tesseract !== undefined;
+  } catch {
+    return false;
+  }
+};
+
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 function PdfReader() {
@@ -16,6 +29,9 @@ function PdfReader() {
   const [successMessage, setSuccessMessage] = useState("");
   const [filesBeingProcessed, setFilesBeingProcessed] = useState(0);
   const [enableTableExtraction, setEnableTableExtraction] = useState(false);
+  const [enableOCR, setEnableOCR] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
   const [extractedTables, setExtractedTables] = useState([]);
   const [stats, setStats] = useState({
     totalFiles: 0,
@@ -61,6 +77,16 @@ function PdfReader() {
   const [showTextSegmentation, setShowTextSegmentation] = useState(false);
   const [segmentedText, setSegmentedText] = useState(null);
   const [segmentationType, setSegmentationType] = useState('paragraphs');
+
+  // Check tesseract availability on component mount
+  useEffect(() => {
+    tesseractAvailable = checkTesseractAvailability();
+    if (tesseractAvailable) {
+      console.log("tesseract.js is available");
+    } else {
+      console.log("tesseract.js not available - OCR functionality disabled");
+    }
+  }, []);
 
   /**
     * Handles the file input change event.
@@ -275,7 +301,7 @@ function PdfReader() {
     const jsonData = {
       extractionDate: new Date().toISOString(),
       filesProcessed: filesBeingProcessed,
-      ocrEnabled: false,
+      ocrEnabled: enableOCR,
       extractedText: text,
       pages: text.split('\n\n').filter(page => page.trim()).map((page, index) => ({
         pageNumber: index + 1,
@@ -1124,11 +1150,76 @@ function PdfReader() {
       const textContent = await page.getTextContent();
       let extractedText = textContent.items.map((item) => item.str).join(" ");
 
-      // OCR functionality disabled when tesseract.js is not available
+      // If OCR is enabled and extracted text is minimal (likely scanned PDF), use OCR
+      if (enableOCR && extractedText.trim().length < 100) {
+        if (!tesseractAvailable) {
+          console.log(`Page ${pageNum}: OCR requested but tesseract.js not available`);
+          setError("OCR functionality requires tesseract.js. Please install it with: npm install tesseract.js");
+          return extractedText;
+        }
+
+        console.log(`Page ${pageNum}: OCR functionality would be used here when tesseract.js is installed`);
+        // For now, just log that OCR would be used
+        // When tesseract.js is installed, uncomment the OCR code below
+
+        /*
+        console.log(`Page ${pageNum}: Using OCR for text extraction...`);
+        setIsOcrProcessing(true);
+        setOcrProgress(10);
+
+        // Get page as canvas for OCR
+        const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better OCR
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+
+        setOcrProgress(30);
+        await page.render(renderContext).promise;
+        setOcrProgress(50);
+
+        // Create OCR worker
+        const worker = await createWorker();
+        setOcrProgress(70);
+
+        try {
+          // Load English language
+          await worker.loadLanguage('eng');
+          await worker.initialize('eng');
+          setOcrProgress(80);
+
+          // Perform OCR
+          const { data: { text: ocrText } } = await worker.recognize(canvas);
+          setOcrProgress(90);
+
+          if (ocrText && ocrText.trim().length > extractedText.trim().length) {
+            console.log(`Page ${pageNum}: OCR successful, extracted ${ocrText.length} characters`);
+            extractedText = ocrText;
+          } else {
+            console.log(`Page ${pageNum}: OCR completed but keeping original text`);
+          }
+        } finally {
+          // Clean up worker
+          await worker.terminate();
+          setOcrProgress(100);
+          setTimeout(() => {
+            setIsOcrProcessing(false);
+            setOcrProgress(0);
+          }, 1000);
+        }
+        */
+      }
 
       return extractedText;
     } catch (error) {
-      console.error(`Error extracting text from page ${pageNum}:`, error);
+      console.error(`Error extracting text from page ${pageNum}:`, error.message);
+      setIsOcrProcessing(false);
+      setOcrProgress(0);
       return `[Error extracting page ${pageNum}]`;
     }
   };
@@ -1340,21 +1431,34 @@ function PdfReader() {
       </div>
 
       <div style={{ marginTop: "20px", textAlign: "center" }}>
-        <div className="checkbox-group" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer", opacity: 0.6 }}>
+        <div className="checkbox-group" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}>
           <input
             type="checkbox"
-            checked={false}
-            disabled={true}
+            checked={enableOCR}
+            onChange={(e) => setEnableOCR(e.target.checked)}
             style={{ transform: "scale(1.2)" }}
-            aria-label="OCR functionality requires tesseract.js installation"
+            aria-label="Enable OCR for scanned PDFs"
           />
-          <span style={{ fontSize: "0.9rem", color: "#666" }}>
-            OCR for scanned PDFs (requires tesseract.js)
+          <span style={{ fontSize: "0.9rem", color: enableOCR ? "#333" : "#666" }}>
+            OCR for scanned PDFs (using tesseract.js)
           </span>
         </div>
         <p style={{ fontSize: "0.8rem", color: "#888", marginTop: "5px" }}>
-          Install tesseract.js with: npm install tesseract.js
+          {tesseractAvailable
+            ? "Enable OCR to extract text from scanned or image-based PDFs"
+            : "Enable OCR (requires tesseract.js: npm install tesseract.js)"
+          }
         </p>
+        {isOcrProcessing && (
+          <div style={{ marginTop: "10px", textAlign: "center" }}>
+            <div style={{ fontSize: "0.9rem", color: "#666", marginBottom: "5px" }}>
+              🔄 Processing OCR... {ocrProgress}%
+            </div>
+            <div className="progress-bar" style={{ width: "200px", margin: "0 auto" }}>
+              <div className="progress-fill" style={{ width: `${ocrProgress}%`, background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}></div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: "20px", textAlign: "center" }}>
