@@ -281,8 +281,8 @@ body {
 
 /* Keyboard Shortcuts */
 .keyboard-shortcuts {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #080808;
+  border: 1px solid #070707;
   border-radius: 8px;
   padding: 15px;
   margin: 20px 0;
@@ -480,8 +480,8 @@ footer {
 
 /* Page Selection Styles */
 .page-selection {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #0d0d0d;
+  border: 1px solid #0b0b0b;
   border-radius: 8px;
   padding: 15px;
   margin: 15px 0;
@@ -790,7 +790,7 @@ button:focus-visible {
 .pdf-extractor-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #333;
+  color: #ea580f;
   margin-bottom: 10px;
   text-align: center;
 }
@@ -1553,8 +1553,8 @@ mark {
 
 /* Keyboard Shortcuts Info */
 .keyboard-shortcuts {
-  background: #f0f9ff;
-  border: 1px solid #dbeafe;
+  background: #0e0e0f;
+  border: 1px solid #080909;
   border-radius: 12px;
   padding: 16px;
   margin: 20px 0;
