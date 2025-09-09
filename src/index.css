@@ -348,8 +348,8 @@ body {
 footer {
   margin-top: 40px;
   padding: 20px;
-  background: #f8fafc;
-  border-top: 1px solid #e5e7eb;
+  background: #1f2937;
+  border-top: 1px solid #1f2937;
   text-align: center;
 }
 
@@ -1886,8 +1886,8 @@ footer {
   margin-top: 40px;
   padding: 20px;
   text-align: center;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-top: 1px solid #1f2937;
+  background: #1f2937;
 }
 
 .footer-features {
