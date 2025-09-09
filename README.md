@@ -28,7 +28,7 @@ npm run dev
 ## 💬 Community & Support
 
 [![Discord](https://img.shields.io/badge/Discord-Community-5865F2.svg)](https://discord.gg/raj,dev_)
-[![Discord](https://img.shields.io/badge/Discord-Support-5865F2.svg)](https://discord.gg/x raj_dev_X)
+[![Discord](https://img.shields.io/badge/Discord-Support-5865F2.svg)](https://discord.gg/xraj_dev_X)
 
 Join our Discord community for support, feature requests, and discussions about PDF processing!
 
