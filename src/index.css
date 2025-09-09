@@ -281,8 +281,8 @@ body {
 
 /* Keyboard Shortcuts */
 .keyboard-shortcuts {
-  background: #080808;
-  border: 1px solid #070707;
+  background: #1f2937;
+  border: 1px solid #1f2937;
   border-radius: 8px;
   padding: 15px;
   margin: 20px 0;
@@ -1553,8 +1553,8 @@ mark {
 
 /* Keyboard Shortcuts Info */
 .keyboard-shortcuts {
-  background: #0e0e0f;
-  border: 1px solid #080909;
+  background: #1f2937;
+  border: 1px solid #1f2937;
   border-radius: 12px;
   padding: 16px;
   margin: 20px 0;
